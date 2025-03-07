@@ -1,7 +1,9 @@
 "use client";
+import axios from "axios";
 import Image from "next/image";
 import React from "react";
 import Modal from "react-modal";
+import { toast } from "react-toastify";
 
 interface CartItem {
   thumbnail: string;
@@ -27,6 +29,27 @@ const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose, cart }) => {
     (prevQty, cureentItem) => prevQty + cureentItem.price,
     0
   );
+
+  const handleCheckout = async () => {
+    const orderData = {
+      cartItems: cart,
+      customerInfo: {
+        name: "Rasel Ahmmed",
+        email: "customer@example.com",
+        phone: "01676176820",
+        address: "New Zigatola, Dhaka",
+      },
+    };
+    const response = await axios.post(
+      `${process.env.NEXT_PUBLIC_BASE_URL}/api/payments/init`,
+      orderData
+    );
+    if (response.data.status === "success") {
+      window.location.href = response.data.redirectUrl;
+    } else {
+      toast.error("Payment initiation failed. Please try again.");
+    }
+  };
   return (
     <Modal
       isOpen={isOpen}
@@ -90,7 +113,7 @@ const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose, cart }) => {
           <button className="modal-shop-btn" onClick={onClose}>
             Continue to Shopping
           </button>
-          <button className="modal-checkout-btn" onClick={onClose}>
+          <button className="modal-checkout-btn" onClick={handleCheckout}>
             Checkout
           </button>
         </div>
